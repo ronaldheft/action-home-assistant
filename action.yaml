@@ -21,6 +21,10 @@ inputs:
   env_file:
     description: Possible path to environment file to use
     required: false
+  strict:
+    description: Fail if Home Assistant reports warnings / Incorrect config
+    default: "false"
+    required: false
 
 runs:
   using: "composite"
@@ -109,6 +113,10 @@ runs:
         if [[ -f "${{ inputs.env_file }}" ]]; then
           env_file_arg="--env-file ${{ inputs.env_file }}"
         fi
+        strict_arg=""
+        if [[ "${{ inputs.strict }}" == "true" ]]; then
+          strict_arg="--fail-on-warnings"
+        fi
         docker run --rm \
           --entrypoint "" \
           -v $(pwd):/github/workspace \
@@ -117,4 +125,5 @@ runs:
           "ghcr.io/home-assistant/home-assistant:${{ steps.version.outputs.version }}" \
             python -m homeassistant \
               --config "${{ steps.check.outputs.path }}" \
-              --script check_config
+              --script check_config \
+              $strict_arg
