@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: 🚀 Run action helper tests
+        run: python3 test/test_check_config_result.py
       - name: 🚀 Run Home Assistant Configuration Check
         uses: ./
         with:

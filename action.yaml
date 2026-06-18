@@ -117,6 +117,9 @@ runs:
         if [[ "${{ inputs.strict }}" == "true" ]]; then
           strict_arg="--fail-on-warnings"
         fi
+        log_file="$(mktemp)"
+        trap 'rm -f "${log_file}"' EXIT
+        set +e
         docker run --rm \
           --entrypoint "" \
           -v $(pwd):/github/workspace \
@@ -126,4 +129,11 @@ runs:
             python -m homeassistant \
               --config "${{ steps.check.outputs.path }}" \
               --script check_config \
-              $strict_arg
+              $strict_arg \
+          2>&1 | tee "${log_file}"
+        check_status="${PIPESTATUS[0]}"
+        set -e
+        python3 "${{ github.action_path }}/check_config_result.py" \
+          "${check_status}" \
+          "${{ inputs.strict }}" \
+          "${log_file}"
